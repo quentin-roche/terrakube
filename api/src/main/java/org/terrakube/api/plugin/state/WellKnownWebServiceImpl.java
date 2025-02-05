@@ -26,11 +26,11 @@ public class WellKnownWebServiceImpl {
     @Value("${org.terrakube.token.client-id}")
     String dexClientId;
 
-    @Value("${org.terrakube.token.issuer-uri}")
-    String dexIssuerUri;
+    @Value("${org.terrakube.token.issuer-uri-well-known}")
+    String dexIssuerUriWellKnown;
 
     @GetMapping(produces = "application/json")
     public ResponseEntity<String> terraformJson() {
-        return ResponseEntity.ok(String.format(terraformJsonContent, dexClientId, dexIssuerUri, dexIssuerUri));
+        return ResponseEntity.ok(String.format(terraformJsonContent, dexClientId, dexIssuerUriWellKnown, dexIssuerUriWellKnown));
     }
 }
