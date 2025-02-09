@@ -1,5 +1,8 @@
 package org.terrakube.api.plugin.state;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -64,6 +67,7 @@ import org.terrakube.api.rs.workspace.history.archive.Archive;
 import org.terrakube.api.rs.workspace.history.archive.ArchiveType;
 import org.terrakube.api.rs.workspace.tag.WorkspaceTag;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -97,6 +101,8 @@ public class RemoteTfeService {
 
     private AccessRepository accessRepository;
 
+    private String internalBase64Secret;
+
     public RemoteTfeService(JobRepository jobRepository,
                             ContentRepository contentRepository,
                             OrganizationRepository organizationRepository,
@@ -113,7 +119,8 @@ public class RemoteTfeService {
                             WorkspaceTagRepository workspaceTagRepository,
                             TeamTokenService teamTokenService,
                             ArchiveRepository archiveRepository,
-                            AccessRepository accessRepository) {
+                            AccessRepository accessRepository,
+                            @Value("${org.terrakube.token.internal}") String internalBase64Secret) {
         this.jobRepository = jobRepository;
         this.contentRepository = contentRepository;
         this.organizationRepository = organizationRepository;
@@ -131,6 +138,7 @@ public class RemoteTfeService {
         this.teamTokenService = teamTokenService;
         this.archiveRepository = archiveRepository;
         this.accessRepository = accessRepository;
+        this.internalBase64Secret = internalBase64Secret;
     }
 
     private boolean validateTerrakubeUser(JwtAuthenticationToken currentUser) {
@@ -1152,7 +1160,7 @@ public class RemoteTfeService {
 
         planRunModel.getAttributes().put("status", planStatus);
         planRunModel.getAttributes().put("log-read-url",
-                String.format("https://%s/remote/tfe/v2/plans/%s/logs", hostname, planId));
+                String.format("https://%s/remote/tfe/v2/plans/%s/logs", hostname, encryptPlanId(planId)));
         plansData.setData(planRunModel);
         return plansData;
     }
@@ -1189,12 +1197,13 @@ public class RemoteTfeService {
         }
         applyModel.getAttributes().put("status", applyStatus);
         applyModel.getAttributes().put("log-read-url",
-                String.format("https://%s/remote/tfe/v2/applies/%s/logs", hostname, planId));
+                String.format("https://%s/remote/tfe/v2/applies/%s/logs", hostname, encryptPlanId(planId)));
         applyRunData.setData(applyModel);
         return applyRunData;
     }
 
-    byte[] getPlanLogs(int planId, int offset, int limit) {
+    byte[] getPlanLogs(String encryptedPlanId, int offset, int limit) {
+        int planId = decryptPlanId(encryptedPlanId);
         Job job = jobRepository.getReferenceById(Integer.valueOf(planId));
         byte[] logs = "".getBytes();
         TextStringBuilder logsOutput = new TextStringBuilder();
@@ -1228,7 +1237,8 @@ public class RemoteTfeService {
         return logs;
     }
 
-    byte[] getApplyLogs(int planId, int offset, int limit) {
+    byte[] getApplyLogs(String encryptedPlanId, int offset, int limit) {
+        int planId = decryptPlanId(encryptedPlanId);
         Job job = jobRepository.getReferenceById(Integer.valueOf(planId));
         byte[] logs = "".getBytes();
         TextStringBuilder logsOutputApply = new TextStringBuilder();
@@ -1309,4 +1319,37 @@ public class RemoteTfeService {
 
         return stateOutputs;
     }
+
+    private String encryptPlanId(int planId) {
+        try {
+            byte[] decodedKey = Base64.getDecoder().decode(internalBase64Secret);
+            SecretKey secretKey = new SecretKeySpec(decodedKey, "AES");
+
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(String.valueOf(planId).getBytes());
+
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(encryptedBytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Error encrypting planId", e);
+        }
+    }
+
+    private int decryptPlanId(String encryptedPlanId) {
+        try {
+            byte[] decodedKey = Base64.getDecoder().decode(internalBase64Secret);
+            SecretKey secretKey = new SecretKeySpec(decodedKey, "AES");
+
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getUrlDecoder().decode(encryptedPlanId));
+
+            return Integer.parseInt(new String(decryptedBytes));
+        } catch (Exception e) {
+            throw new RuntimeException("Error decrypting planId", e);
+        }
+    }
+
+
+
 }
