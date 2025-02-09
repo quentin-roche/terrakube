@@ -300,20 +300,20 @@ public class RemoteTfeController {
     }
 
     @Transactional
-    @GetMapping(produces = "application/vnd.api+json", path = "/plans/{planId}/logs")
-    public ResponseEntity<String> getPlanLogs(@PathVariable("planId") int planId,
+    @GetMapping(produces = "application/vnd.api+json", path = "/plans/{encryptedPlanId}/logs")
+    public ResponseEntity<String> getPlanLogs(@PathVariable("encryptedPlanId") String encryptedPlanId,
             @RequestParam int offset, @RequestParam int limit) throws IOException {
         return ResponseEntity.of(Optional
-                .ofNullable(new String(remoteTfeService.getPlanLogs(planId, offset, limit), StandardCharsets.UTF_8)));
+                .ofNullable(new String(remoteTfeService.getPlanLogs(encryptedPlanId, offset, limit), StandardCharsets.UTF_8)));
     }
 
     @Transactional
-    @GetMapping(produces = "application/vnd.api+json", path = "/applies/{applyId}/logs")
-    public ResponseEntity<String> getApplyLogs(@PathVariable("applyId") int planId,
+    @GetMapping(produces = "application/vnd.api+json", path = "/applies/{encryptedPlanId}/logs")
+    public ResponseEntity<String> getApplyLogs(@PathVariable("encryptedPlanId") String encryptedPlanId,
             @RequestParam int offset, @RequestParam int limit) throws IOException {
         return ResponseEntity
                 .of(Optional.ofNullable(
-                        new String(remoteTfeService.getApplyLogs(planId, offset, limit), StandardCharsets.UTF_8)));
+                        new String(remoteTfeService.getApplyLogs(encryptedPlanId, offset, limit), StandardCharsets.UTF_8)));
     }
 
     @Transactional
