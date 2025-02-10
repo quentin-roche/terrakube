@@ -7,8 +7,10 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import lombok.extern.slf4j.Slf4j;
+import org.terrakube.client.TerrakubeClient;
 import org.terrakube.executor.plugin.tfoutput.TerraformOutput;
 import org.terrakube.executor.plugin.tfoutput.TerraformOutputPathService;
+import org.terrakube.executor.plugin.tfoutput.api.ApiTerraformOutputImpl;
 import org.terrakube.executor.plugin.tfoutput.aws.AwsTerraformOutputImpl;
 import org.terrakube.executor.plugin.tfoutput.aws.AwsTerraformOutputProperties;
 import org.terrakube.executor.plugin.tfoutput.azure.AzureTerraformOutputImpl;
@@ -46,7 +48,7 @@ import java.util.concurrent.CompletableFuture;
 public class TerraformOutputAutoConfiguration {
 
     @Bean
-    public TerraformOutput terraformOutput(TerraformOutputProperties terraformOutputProperties, AzureTerraformOutputProperties azureTerraformOutputProperties, AwsTerraformOutputProperties awsTerraformOutputProperties, GcpTerraformOutputProperties gcpTerraformOutputProperties, TerraformOutputPathService terraformOutputPathService) {
+    public TerraformOutput terraformOutput(TerraformOutputProperties terraformOutputProperties, AzureTerraformOutputProperties azureTerraformOutputProperties, AwsTerraformOutputProperties awsTerraformOutputProperties, GcpTerraformOutputProperties gcpTerraformOutputProperties, TerraformOutputPathService terraformOutputPathService, TerrakubeClient terrakubeClient) {
         TerraformOutput terraformOutput = null;
 
         if (terraformOutputProperties != null)
@@ -123,6 +125,11 @@ public class TerraformOutputAutoConfiguration {
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }
+                    break;
+                case ApiTerraformOutputImpl:
+                    terraformOutput = ApiTerraformOutputImpl.builder()
+                            .terrakubeClient(terrakubeClient)
+                            .build();
                     break;
                 default:
                     terraformOutput = LocalTerraformOutputImpl.builder()
