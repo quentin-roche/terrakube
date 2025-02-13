@@ -1,5 +1,6 @@
 package org.terrakube.api.plugin.vcs.provider.azdevops;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.terrakube.api.plugin.vcs.provider.exception.TokenException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 public class AzDevOpsTokenService {
+    @Autowired
+    private WebClient.Builder webClientBuilder; // Use Spring-managed WebClient.Builder
 
     @Value("${org.terrakube.hostname}")
     private String hostname;
@@ -55,7 +58,7 @@ public class AzDevOpsTokenService {
     }
 
     private WebClient getWebClient(String endpoint){
-        return WebClient.builder()
+        return webClientBuilder
                 .baseUrl((endpoint != null)? endpoint : DEFAULT_ENDPOINT)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
