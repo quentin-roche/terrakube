@@ -27,26 +27,15 @@ public class WebClientConfig {
         if (webClientConfigProperties.isProxyEnabled()) {
             log.info("Using proxy: {}:{}", webClientConfigProperties.getProxyHost(), webClientConfigProperties.getProxyPort());
 
-            httpClient = httpClient.proxy(proxySpec ->
-                    proxySpec.type(ProxyProvider.Proxy.HTTP)
-                            .host(webClientConfigProperties.getProxyHost())
-                            .port(webClientConfigProperties.getProxyPort())
-            );
-            if (
-                !webClientConfigProperties.getProxyUsername().isEmpty() &&
-                !webClientConfigProperties.getProxyPassword().isEmpty()
-            ) {
-                log.info("Using proxy authentication using username: {}", webClientConfigProperties.getProxyUsername());
-
-                // **Explicitly set Proxy Authentication via HttpProxyHandler**
-                httpClient = httpClient.doOnChannelInit((connectionObserver, channel, remoteAddress) -> {
-                    channel.pipeline().addFirst(new io.netty.handler.proxy.HttpProxyHandler(
-                            new java.net.InetSocketAddress(webClientConfigProperties.getProxyHost(), webClientConfigProperties.getProxyPort()),
-                            webClientConfigProperties.getProxyUsername(),
-                            webClientConfigProperties.getProxyPassword()
-                    ));
-                });
-            }
+            httpClient = httpClient.proxy(proxySpec -> {
+                ProxyProvider.Builder builder = proxySpec.type(ProxyProvider.Proxy.HTTP)
+                        .host(webClientConfigProperties.getProxyHost())
+                        .port(webClientConfigProperties.getProxyPort())
+                        .username(webClientConfigProperties.getProxyUsername().isEmpty() ? null :
+                                  webClientConfigProperties.getProxyUsername())
+                        .password(webClientConfigProperties.getProxyPassword().isEmpty() ? null :
+                                s -> webClientConfigProperties.getProxyPassword());
+            });
 
             if (webClientConfigProperties.isProxyUseTls()) {
                 log.info("Using TLS for proxy");
