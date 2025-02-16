@@ -38,7 +38,7 @@ public class WebClientConfig {
                     !webClientConfigProperties.getProxyUsername().isEmpty() &&
                             !webClientConfigProperties.getProxyPassword().isEmpty()
             ) {
-                log.info("Using proxy authentication");
+                log.info("Using proxy authentication using username: {}", webClientConfigProperties.getProxyUsername());
                 String auth = webClientConfigProperties.getProxyUsername() + ":" + webClientConfigProperties.getProxyPassword();
                 String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
                 String proxyAuthHeader = "Basic " + encodedAuth;
@@ -57,6 +57,11 @@ public class WebClientConfig {
                     throw new RuntimeException("Failed to configure SSL for proxy", e);
                 }
             }
+            httpClient = httpClient.doOnRequest((httpRequest, connection) -> {
+                connection.addHandlerLast(new io.netty.handler.logging.LoggingHandler("WebClientProxy"));
+                log.info("Outgoing request: {}", httpRequest.uri());
+                log.info("Headers: {}", httpRequest.requestHeaders());
+            });
         };
 
         ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
