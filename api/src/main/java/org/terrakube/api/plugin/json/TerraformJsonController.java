@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
@@ -28,7 +29,12 @@ public class TerraformJsonController {
 
         log.info("Fetching Terraform index from: {}", finalUrl);
 
-        WebClient webClient = webClientBuilder.baseUrl(finalUrl).build();
+        WebClient webClient = webClientBuilder
+                .exchangeStrategies(ExchangeStrategies.builder()
+                        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
+                        .build())
+                .baseUrl(finalUrl)
+                .build();
 
         String terraformIndex;
         try {
