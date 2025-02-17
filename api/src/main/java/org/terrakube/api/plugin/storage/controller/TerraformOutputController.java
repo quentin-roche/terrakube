@@ -45,26 +45,21 @@ public class TerraformOutputController {
     @Transactional
     @PostMapping(
             value = "/organization/{organizationId}/job/{jobId}/step/{stepId}",
-            consumes = "multipart/form-data"
+            consumes = "application/vnd.api+json"
     )
     public ResponseEntity<String> uploadFile(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("jobId") String jobId,
             @PathVariable("stepId") String stepId,
-            @RequestParam("file") MultipartFile file) {
+            String tfOutput) {
 
-        try {
-            log.info("Uploading file for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
+        log.info("Uploading file for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
 
-            // Store the file using the storage service
-            storageTypeService.uploadStepOutput(organizationId, jobId, stepId, file.getBytes());
+        // Store the file using the storage service
+        storageTypeService.uploadStepOutput(organizationId, jobId, stepId, tfOutput.getBytes());
 
-            return ResponseEntity.ok(
-                ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString()
-            );
-        } catch (IOException e) {
-            log.error("Error uploading file", e);
-            return ResponseEntity.internalServerError().body("File upload failed");
-        }
+        return ResponseEntity.ok(
+            ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString()
+        );
     }
 }
