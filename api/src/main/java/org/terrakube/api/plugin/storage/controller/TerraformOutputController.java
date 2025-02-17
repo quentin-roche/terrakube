@@ -51,7 +51,7 @@ public class TerraformOutputController {
             @PathVariable("organizationId") String organizationId,
             @PathVariable("jobId") String jobId,
             @PathVariable("stepId") String stepId,
-            String tfOutput) {
+            @RequestBody String tfOutput) {
 
         log.info("Uploading file for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
 
