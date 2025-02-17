@@ -2,14 +2,10 @@ package org.terrakube.api.plugin.storage.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.terrakube.api.plugin.state.model.terraform.TfOutputRequest;
-import org.terrakube.api.plugin.state.model.terraform.TfOutputUrl;
 import org.terrakube.api.plugin.storage.StorageTypeService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
