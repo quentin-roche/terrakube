@@ -59,7 +59,7 @@ public class TerraformOutputController {
         storageTypeService.uploadStepOutput(organizationId, jobId, stepId, tfOutput.getData().getBytes());
 
         TfOutputUrl response = new TfOutputUrl();
-        response.setUrl(ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString());
+        response.setData(ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 }
