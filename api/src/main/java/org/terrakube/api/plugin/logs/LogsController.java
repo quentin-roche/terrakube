@@ -17,6 +17,7 @@ public class LogsController {
     @Transactional
     @PostMapping(produces = "application/vnd.api+json", value = "/{jobId}/setup-consumer-groups")
     public ResponseEntity<Void> setupConsumerGroups(@PathVariable("jobId") String jobId) {
+        log.info("Setting up consumer groups for job {}", jobId);
         logsService.setupConsumerGroups(jobId);
         return ResponseEntity.ok().build();
     }
@@ -25,6 +26,7 @@ public class LogsController {
     @PostMapping(produces = "application/vnd.api+json", value = "")
     public ResponseEntity<Void> appendLogs(@RequestBody LogsRequest logsRequest
     ) {
+        log.info("Appending logs to Redis");
         logsService.appendLogs(logsRequest.getData());
         return ResponseEntity.ok().build();
     }

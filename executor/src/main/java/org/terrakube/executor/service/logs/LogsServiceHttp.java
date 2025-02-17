@@ -23,6 +23,7 @@ public class LogsServiceHttp implements ProcessLogs {
 
     @Override
     public void setupConsumerGroups(String jobId) {
+        log.info("Setting up consumer groups for job {}", jobId);
         terrakubeClient.setupConsumerGroups(jobId);
     }
 
@@ -42,6 +43,7 @@ public class LogsServiceHttp implements ProcessLogs {
 
     @Scheduled(fixedDelay = 5000)  // Send logs every 5 seconds
     public void sendBatchedLogs() {
+        log.info("Sending logs to Terrakube API");
         if (logQueue.isEmpty()) {
             return;
         }
