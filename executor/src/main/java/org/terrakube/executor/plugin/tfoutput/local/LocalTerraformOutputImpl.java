@@ -24,8 +24,6 @@ public class LocalTerraformOutputImpl implements TerraformOutput {
     public String save(String organizationId, String jobId, String stepId, String output, String outputError) {
         log.info("Uploading output for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
 
-        TfOutputRequest request = new TfOutputRequest();
-        request.setData(output);
-        return terrakubeClient.uploadOutput(request, organizationId, jobId, stepId).getData().getUrl();
+        return terrakubeClient.uploadOutput(output + outputError, organizationId, jobId, stepId).getData();
     }
 }
