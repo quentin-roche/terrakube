@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.terrakube.api.plugin.state.model.logs.LogsRequest;
-import org.terrakube.api.plugin.state.model.workspace.tags.TagDataList;
 
 @AllArgsConstructor
 @RestController
@@ -23,7 +22,7 @@ public class LogsController {
     }
 
     @Transactional
-    @PostMapping(produces = "application/vnd.api+json", value = "/")
+    @PostMapping(produces = "application/vnd.api+json", value = "")
     public ResponseEntity<Void> appendLogs(@RequestBody LogsRequest logsRequest
     ) {
         logsService.appendLogs(logsRequest.getData());
