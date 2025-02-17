@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.security.core.parameters.P;
 import org.terrakube.api.plugin.storage.StorageTypeService;
 
 import java.io.IOException;
@@ -49,6 +50,21 @@ public class GcpStorageTypeServiceImpl implements StorageTypeService {
             log.error(e.getMessage());
         }
         return response;
+    }
+
+    @Override
+    public void uploadStepOutput(String organizationId, String jobId, String stepId, byte[] file) {
+        BlobId blobJsonId = BlobId.of(
+            bucketName,
+            String.format(GCP_LOCATION_OUTPUT, organizationId, jobId, stepId)
+        );
+        try {
+            log.info("creating new  step output...");
+            BlobInfo blobJsonStateHistory = BlobInfo.newBuilder(blobJsonId).build();
+            storage.create(blobJsonStateHistory, file);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     @Override

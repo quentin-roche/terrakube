@@ -2,14 +2,17 @@ package org.terrakube.api.plugin.storage.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.terrakube.api.plugin.state.model.workspace.tags.TagDataList;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.terrakube.api.plugin.storage.StorageTypeService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.terrakube.api.plugin.streaming.StreamingService;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @AllArgsConstructor
@@ -17,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @RequestMapping("/tfoutput/v1")
 public class TerraformOutputController {
-
     private StorageTypeService storageTypeService;
 
     private StreamingService streamingService;
@@ -38,5 +40,31 @@ public class TerraformOutputController {
             return storageTypeService.getStepOutput(organizationId, jobId, stepId);
         }
 
+    }
+
+    @Transactional
+    @PostMapping(
+            value = "/organization/{organizationId}/job/{jobId}/step/{stepId}",
+            consumes = "multipart/form-data"
+    )
+    public ResponseEntity<String> uploadFile(
+            @PathVariable("organizationId") String organizationId,
+            @PathVariable("jobId") String jobId,
+            @PathVariable("stepId") String stepId,
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+            log.info("Uploading file for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
+
+            // Store the file using the storage service
+            storageTypeService.uploadStepOutput(organizationId, jobId, stepId, file.getBytes());
+
+            return ResponseEntity.ok(
+                ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString()
+            );
+        } catch (IOException e) {
+            log.error("Error uploading file", e);
+            return ResponseEntity.internalServerError().body("File upload failed");
+        }
     }
 }

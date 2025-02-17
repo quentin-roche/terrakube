@@ -7,6 +7,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import lombok.extern.slf4j.Slf4j;
+import org.terrakube.client.TerrakubeClient;
 import org.terrakube.executor.plugin.tfoutput.TerraformOutput;
 import org.terrakube.executor.plugin.tfoutput.TerraformOutputPathService;
 import org.terrakube.executor.plugin.tfoutput.aws.AwsTerraformOutputImpl;
@@ -46,7 +47,7 @@ import java.util.concurrent.CompletableFuture;
 public class TerraformOutputAutoConfiguration {
 
     @Bean
-    public TerraformOutput terraformOutput(TerraformOutputProperties terraformOutputProperties, AzureTerraformOutputProperties azureTerraformOutputProperties, AwsTerraformOutputProperties awsTerraformOutputProperties, GcpTerraformOutputProperties gcpTerraformOutputProperties, TerraformOutputPathService terraformOutputPathService) {
+    public TerraformOutput terraformOutput(TerraformOutputProperties terraformOutputProperties, AzureTerraformOutputProperties azureTerraformOutputProperties, AwsTerraformOutputProperties awsTerraformOutputProperties, GcpTerraformOutputProperties gcpTerraformOutputProperties, TerraformOutputPathService terraformOutputPathService, TerrakubeClient terrakubeClient) {
         TerraformOutput terraformOutput = null;
 
         if (terraformOutputProperties != null)
@@ -126,12 +127,12 @@ public class TerraformOutputAutoConfiguration {
                     break;
                 default:
                     terraformOutput = LocalTerraformOutputImpl.builder()
-                            .terraformOutputPathService(terraformOutputPathService)
+                            .terrakubeClient(terrakubeClient)
                             .build();
             }
         else
             terraformOutput = LocalTerraformOutputImpl.builder()
-                    .terraformOutputPathService(terraformOutputPathService)
+                    .terrakubeClient(terrakubeClient)
                     .build();
         return terraformOutput;
     }

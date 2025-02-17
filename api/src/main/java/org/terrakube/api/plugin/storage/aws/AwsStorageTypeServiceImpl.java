@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.sshd.common.util.io.IoUtils;
 import org.terrakube.api.plugin.storage.StorageTypeService;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -71,6 +72,15 @@ public class AwsStorageTypeServiceImpl implements StorageTypeService {
     @Override
     public byte[] getStepOutput(String organizationId, String jobId, String stepId) {
         return downloadObjectFromBucket(bucketName, String.format(BUCKET_LOCATION_OUTPUT, organizationId, jobId, stepId));
+    }
+
+    @Override
+    public void uploadStepOutput(String organizationId, String jobId, String stepId, byte[] file) {
+        uploadStringToBucket(
+                bucketName,
+                String.format(BUCKET_LOCATION_OUTPUT, organizationId, jobId, stepId),
+                IOUtils.toString(file, StandardCharsets.UTF_8.name())
+        );
     }
 
     @Override
