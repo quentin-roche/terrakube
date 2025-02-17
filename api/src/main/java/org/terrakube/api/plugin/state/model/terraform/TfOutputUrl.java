@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TfOutputUrl {
-    String url;
+    String data;
 }
