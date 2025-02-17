@@ -53,4 +53,9 @@ public class WebClientConfig {
 
         return WebClient.builder().clientConnector(connector);
     }
+
+    @Bean
+    public WebClient webClient(WebClient.Builder webClientBuilder) {
+        return webClientBuilder.build(); // Build WebClient once and share it
+    }
 }

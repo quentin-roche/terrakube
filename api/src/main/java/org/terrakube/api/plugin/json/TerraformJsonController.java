@@ -43,12 +43,12 @@ public class TerraformJsonController {
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
+            return ResponseEntity.ok(terraformIndex);
         } catch (Exception e) {
             log.error("Failed to fetch Terraform index from {}", finalUrl, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching Terraform index");
         }
 
-        return ResponseEntity.ok(terraformIndex);
     }
 }
 
