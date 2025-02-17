@@ -3,6 +3,7 @@ package org.terrakube.api.plugin.storage.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,20 +50,16 @@ public class TerraformOutputController {
             value = "/organization/{organizationId}/job/{jobId}/step/{stepId}",
             consumes = "application/vnd.api+json"
     )
-    public ResponseEntity<TfOutputUrl> uploadFile(
+    public ResponseEntity<String> uploadFile(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("jobId") String jobId,
             @PathVariable("stepId") String stepId,
-            @RequestBody TfOutputRequest tfOutput) {
+            @RequestBody String tfOutput) {
 
         log.info("Uploading file for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
 
-        storageTypeService.uploadStepOutput(organizationId, jobId, stepId, tfOutput.getData().getBytes());
+        storageTypeService.uploadStepOutput(organizationId, jobId, stepId, tfOutput.getBytes());
 
-        TfOutputUrl res = new TfOutputUrl();
-        res.setUrl(
-            ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString()
-        );
-        return ResponseEntity.ok(res);
+        return new ResponseEntity<>(ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString(), HttpStatus.ACCEPTED);
     }
 }
