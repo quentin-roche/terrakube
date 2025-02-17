@@ -2,7 +2,6 @@ package org.terrakube.api.plugin.logs;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.connection.stream.StreamInfo;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.terrakube.api.plugin.state.model.logs.Log;
