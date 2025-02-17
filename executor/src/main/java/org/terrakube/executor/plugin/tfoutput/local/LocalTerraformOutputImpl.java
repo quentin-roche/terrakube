@@ -29,7 +29,7 @@ public class LocalTerraformOutputImpl implements TerraformOutput {
 
         TfOutputRequest tfOutputRequest = new TfOutputRequest();
         tfOutputRequest.setData(output + outputError);
-        Response<String> listOrganization = terrakubeClient.uploadOutput(tfOutputRequest, organizationId, jobId, stepId)
+        Response<String> listOrganization = terrakubeClient.uploadOutput(tfOutputRequest, organizationId, jobId, stepId);
         return listOrganization.getData();
     }
 }
