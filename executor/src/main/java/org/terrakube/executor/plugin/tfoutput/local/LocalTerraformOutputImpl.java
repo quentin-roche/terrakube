@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.terrakube.client.model.organization.job.TfOutputRequest;
 import org.terrakube.executor.plugin.tfoutput.TerraformOutput;
 import org.terrakube.client.TerrakubeClient;
 
@@ -22,6 +23,9 @@ public class LocalTerraformOutputImpl implements TerraformOutput {
     @Override
     public String save(String organizationId, String jobId, String stepId, String output, String outputError) {
         log.info("Uploading output for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
-        return terrakubeClient.uploadOutput(output + outputError, organizationId, jobId, stepId);
+
+        TfOutputRequest request = new TfOutputRequest();
+        request.setData(output);
+        return terrakubeClient.uploadOutput(request, organizationId, jobId, stepId).getData().getUrl();
     }
 }
