@@ -23,7 +23,6 @@ public class LogsService {
     }
 
     public void setupConsumerGroups(String jobId) {
-        StreamInfo.XInfoGroups xInfoGroups = redisTemplate.opsForStream().groups(jobId);
         try {
             redisTemplate.opsForStream().createGroup(jobId, "CLI");
         } catch (Exception ex) {
