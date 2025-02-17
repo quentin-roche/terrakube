@@ -17,7 +17,7 @@ public class LogsController {
     @Transactional
     @PostMapping(produces = "application/vnd.api+json", value = "/{jobId}/setup-consumer-groups")
     public ResponseEntity<Void> setupConsumerGroups(@PathVariable("jobId") String jobId) {
-        logsService.setupConsumerGroup(jobId);
+        logsService.setupConsumerGroups(jobId);
         return ResponseEntity.ok().build();
     }
 

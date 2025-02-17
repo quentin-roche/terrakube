@@ -7,9 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.terrakube.api.plugin.state.model.logs.Log;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -24,7 +22,7 @@ public class LogsService {
         }
     }
 
-    public void setupConsumerGroup(String jobId) {
+    public void setupConsumerGroups(String jobId) {
         StreamInfo.XInfoGroups xInfoGroups = redisTemplate.opsForStream().groups(jobId);
         try {
             redisTemplate.opsForStream().createGroup(jobId, "CLI");
