@@ -23,10 +23,10 @@ public class LogsController {
     }
 
     @Transactional
-    @PostMapping(produces = "application/vnd.api+json", value = "/{jobId}")
-    public ResponseEntity<Void> appendLogs(@PathVariable("jobId") String jobId, @RequestBody LogsRequest logsRequest
+    @PostMapping(produces = "application/vnd.api+json", value = "/")
+    public ResponseEntity<Void> appendLogs(@RequestBody LogsRequest logsRequest
     ) {
-        logsService.appendLogs(jobId, logsRequest.getData());
+        logsService.appendLogs(logsRequest.getData());
         return ResponseEntity.ok().build();
     }
 }

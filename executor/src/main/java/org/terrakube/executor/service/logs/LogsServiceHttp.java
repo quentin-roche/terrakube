@@ -11,10 +11,7 @@ import org.terrakube.client.model.organization.job.LogsRequest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 @Service
 @Slf4j
@@ -22,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ConditionalOnProperty(name = "org.executor.log-though-api", havingValue = "true", matchIfMissing = false)
 public class LogsServiceHttp implements ProcessLogs {
     private TerrakubeClient terrakubeClient;
-    private final ConcurrentMap<Integer, ConcurrentLinkedQueue<Log>> jobLogQueues = new ConcurrentHashMap<>();
+    private final LinkedBlockingDeque<Log> logQueue = new LinkedBlockingDeque<>();
 
     @Override
     public void setupConsumerGroups(String jobId) {
@@ -30,42 +27,50 @@ public class LogsServiceHttp implements ProcessLogs {
     }
 
     public void sendLogs(Integer jobId, String stepId, int lineNumber, String output) {
-        Log log = new Log();
-        log.setJobId(jobId);
-        log.setStepId(stepId);
-        log.setLineNumber(lineNumber);
-        log.setOutput(output);
+        Log logEntry = new Log();
+        logEntry.setJobId(jobId);
+        logEntry.setStepId(stepId);
+        logEntry.setLineNumber(lineNumber);
+        logEntry.setOutput(output);
 
-        ConcurrentLinkedQueue<Log> logQueue = jobLogQueues.computeIfAbsent(jobId, k -> new ConcurrentLinkedQueue<>());
-        logQueue.add(log);
+        try {
+            logQueue.put(logEntry);
+        } catch (InterruptedException addLogException) {
+            log.error("Failed to add log to queue", addLogException);
+        }
     }
 
     @Scheduled(fixedDelay = 5000)  // Send logs every 5 seconds
     public void sendBatchedLogs() {
-        if (jobLogQueues.isEmpty()) {
+        if (logQueue.isEmpty()) {
             return;
         }
 
-        for (Map.Entry<Integer, ConcurrentLinkedQueue<Log>> entry : jobLogQueues.entrySet()) {
-            Integer jobId = entry.getKey();
-            ConcurrentLinkedQueue<Log> queue = entry.getValue();
+        List<Log> batch = new ArrayList<>();
+        logQueue.drainTo(batch);
 
-            if (queue.isEmpty()) {
-                continue;
-            }
+        if (batch.isEmpty()) {
+            return;
+        }
 
-            List<Log> batch = new ArrayList<>();
-            while (!queue.isEmpty()) {
-                batch.add(queue.poll());
-            }
+        LogsRequest logsRequest = new LogsRequest();
+        logsRequest.setData(batch);
 
-            LogsRequest logsRequest = new LogsRequest();
-            logsRequest.setData(batch);
+        try {
+            terrakubeClient.appendLogs(logsRequest);
+        } catch (Exception sendLogsException) {
+            log.error("Failed to send logs", sendLogsException);
+            requeueLogs(batch);
+        }
+    }
 
+
+    private void requeueLogs(List<Log> failedBatch) {
+        for (int i = failedBatch.size() - 1; i >= 0; i--) {
             try {
-                terrakubeClient.appendLogs(logsRequest, String.valueOf(jobId));
-            } catch (Exception e) {
-                log.error("Failed to send logs, retrying...");
+                logQueue.putFirst(failedBatch.get(i));
+            } catch (InterruptedException e) {
+                log.error("Thread interrupted while re-queuing logs", e);
             }
         }
     }
