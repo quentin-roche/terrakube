@@ -17,7 +17,7 @@ public class LogsService {
 
     public void appendLogs(List<Log> logs) {
         for (Log log : logs) {
-            redisTemplate.opsForStream().add(log.getJobId(), log.toStrMap());
+            redisTemplate.opsForStream().add(log.getJobId().toString(), log.toStrMap());
         }
     }
 
