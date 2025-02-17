@@ -55,7 +55,6 @@ public class TerraformOutputController {
 
         log.info("Uploading file for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
 
-        // Store the file using the storage service
         storageTypeService.uploadStepOutput(organizationId, jobId, stepId, tfOutput.getBytes());
 
         return ResponseEntity.ok(
