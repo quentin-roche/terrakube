@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.terrakube.api.plugin.state.model.terraform.TfOutputRequest;
+import org.terrakube.api.plugin.state.model.terraform.TfOutputUrl;
 import org.terrakube.api.plugin.storage.StorageTypeService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -46,16 +48,18 @@ public class TerraformOutputController {
             value = "/organization/{organizationId}/job/{jobId}/step/{stepId}",
             consumes = "application/vnd.api+json"
     )
-    public ResponseEntity<String> uploadFile(
+    public ResponseEntity<TfOutputUrl> uploadFile(
             @PathVariable("organizationId") String organizationId,
             @PathVariable("jobId") String jobId,
             @PathVariable("stepId") String stepId,
-            @RequestBody String tfOutput) {
+            @RequestBody TfOutputRequest tfOutput) {
 
         log.info("Uploading file for org: {}, job: {}, step: {}", organizationId, jobId, stepId);
 
-        storageTypeService.uploadStepOutput(organizationId, jobId, stepId, tfOutput.getBytes());
+        storageTypeService.uploadStepOutput(organizationId, jobId, stepId, tfOutput.getData().getBytes());
 
-        return new ResponseEntity<>(ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString(), HttpStatus.ACCEPTED);
+        TfOutputUrl response = new TfOutputUrl();
+        response.setUrl(ServletUriComponentsBuilder.fromCurrentRequestUri().toUriString());
+        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 }
