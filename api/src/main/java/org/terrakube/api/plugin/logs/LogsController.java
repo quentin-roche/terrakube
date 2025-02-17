@@ -16,14 +16,14 @@ public class LogsController {
     private final LogsService logsService;
 
     @Transactional
-    @PostMapping(produces = "application/vnd.api+json", value = "{jobId}/setup-consumer-groups")
+    @PostMapping(produces = "application/vnd.api+json", value = "/{jobId}/setup-consumer-groups")
     public ResponseEntity<Void> setupConsumerGroups(@PathVariable("jobId") String jobId) {
         logsService.setupConsumerGroup(jobId);
         return ResponseEntity.ok().build();
     }
 
     @Transactional
-    @PostMapping(produces = "application/vnd.api+json", value = "{jobId}")
+    @PostMapping(produces = "application/vnd.api+json", value = "/{jobId}")
     public ResponseEntity<Void> appendLogs(@PathVariable("jobId") String jobId, @RequestBody LogsRequest logsRequest
     ) {
         logsService.appendLogs(jobId, logsRequest.getData());
