@@ -60,8 +60,13 @@ public class ApiTerraformStateImpl implements TerraformState {
                             String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
                                     .toArray(String[]::new)));
 
-            feign.Response res = terrakubeClient.getCurrentState(organizationId, workspaceId);
-            Files.copy(res.body().asInputStream(), Paths.get(backendStatePath), StandardCopyOption.REPLACE_EXISTING);
+            feign.Response.Body res = terrakubeClient.getCurrentState(organizationId, workspaceId).body();
+
+            if (res == null) {
+                log.warn("No state file found. This is probably the first run.");
+            } else {
+                Files.copy(res.asInputStream(), Paths.get(backendStatePath), StandardCopyOption.REPLACE_EXISTING);
+            }
 
             TextStringBuilder localBackendHcl = new TextStringBuilder();
             localBackendHcl.appendln("terraform {");
@@ -87,13 +92,13 @@ public class ApiTerraformStateImpl implements TerraformState {
     @Override
     public String saveTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId,
                                     File workingDirectory) {
+        log.info("Saving plan file to terrakube API");
 
         Path localPlanPath = Paths.get(workingDirectory.getAbsolutePath() + "/" + TERRAFORM_PLAN_FILE);
         File localPlanFile = localPlanPath.toFile();
 
         if (localPlanFile.exists()) {
             try {
-                log.info("Uploading plan file to terrakube API");
                 byte[] planBytes = Files.readAllBytes(localPlanFile.toPath());
 
                 return terrakubeClient.uploadPlanState(planBytes, organizationId, workspaceId, jobId, stepId).getData().getPath();
@@ -111,12 +116,17 @@ public class ApiTerraformStateImpl implements TerraformState {
     @Override
     public boolean downloadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId,
                                          File workingDirectory) {
+        log.info("Downloading plan file from terrakube API");
         String localPlanPath = workingDirectory.getAbsolutePath() + "/" + TERRAFORM_PLAN_FILE;
         try {
 
-            feign.Response res = terrakubeClient.getPlanState(organizationId, workspaceId, jobId, stepId);
-            Files.copy(res.body().asInputStream(), Paths.get(localPlanPath), StandardCopyOption.REPLACE_EXISTING);
+            feign.Response.Body res = terrakubeClient.getPlanState(organizationId, workspaceId, jobId, stepId).body();
 
+            if (res == null) {
+                log.info("No plan file found");
+                return false;
+            }
+            Files.copy(res.asInputStream(), Paths.get(localPlanPath), StandardCopyOption.REPLACE_EXISTING);
             return true;
         } catch (Exception e) {
             log.error("Failed to download state file from terrakube API");
@@ -126,6 +136,7 @@ public class ApiTerraformStateImpl implements TerraformState {
 
     @Override
     public void saveStateJson(TerraformJob terraformJob, String applyJSON, String rawState) {
+        log.info("Saving state json to terrakube API");
         // Attributes
         CreateStateVersionAttributes stateAttributes = new CreateStateVersionAttributes();
         stateAttributes.setJsonState(Base64.getEncoder().encodeToString(applyJSON.getBytes()));
