@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.terrakube.client.TerrakubeClient;
 import org.terrakube.executor.plugin.tfoutput.TerraformOutput;
 import org.terrakube.executor.plugin.tfoutput.TerraformOutputPathService;
+import org.terrakube.executor.plugin.tfoutput.api.ApiTerraformOutputImpl;
 import org.terrakube.executor.plugin.tfoutput.aws.AwsTerraformOutputImpl;
 import org.terrakube.executor.plugin.tfoutput.aws.AwsTerraformOutputProperties;
 import org.terrakube.executor.plugin.tfoutput.azure.AzureTerraformOutputImpl;
@@ -125,14 +126,19 @@ public class TerraformOutputAutoConfiguration {
                         log.error(e.getMessage());
                     }
                     break;
+                case ApiTerraformOutputImpl:
+                    terraformOutput = ApiTerraformOutputImpl.builder()
+                            .terrakubeClient(terrakubeClient)
+                            .build();
+                    break;
                 default:
                     terraformOutput = LocalTerraformOutputImpl.builder()
-                            .terrakubeClient(terrakubeClient)
+                            .terraformOutputPathService(terraformOutputPathService)
                             .build();
             }
         else
             terraformOutput = LocalTerraformOutputImpl.builder()
-                    .terrakubeClient(terrakubeClient)
+                    .terraformOutputPathService(terraformOutputPathService)
                     .build();
         return terraformOutput;
     }

@@ -13,4 +13,5 @@ import org.terrakube.api.plugin.state.model.generic.Resource;
 @ToString
 public class StateModel  extends Resource {
     Map<String, Object> attributes;
+    StateRelationshipsModel relationships;
 }

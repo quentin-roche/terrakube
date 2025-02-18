@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -113,6 +114,21 @@ public class AwsStorageTypeServiceImpl implements StorageTypeService {
         log.info("terraformRawStateFile: {}", rawBlobKey);
         uploadStringToBucket(bucketName, blobKey, terraformState);
         uploadStringToBucket(bucketName, rawBlobKey, terraformState);
+    }
+
+    @Override
+    public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, String terraformPlan) {
+        String blobKey = String.format("tfstate/%s/%s/%s/%s/terraformLibrary.tfPlan", organizationId, workspaceId, jobId, stepId);
+        uploadStringToBucket(bucketName, blobKey, terraformPlan);
+
+        GetUrlRequest getUrlRequest = GetUrlRequest.builder()
+                .bucket(bucketName)
+                .key(blobKey)
+                .build();
+
+        URL url = s3client.utilities().getUrl(getUrlRequest);
+
+        return url.toExternalForm();
     }
 
     @Override

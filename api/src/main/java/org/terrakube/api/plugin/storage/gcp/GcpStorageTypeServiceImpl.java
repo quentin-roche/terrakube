@@ -166,6 +166,30 @@ public class GcpStorageTypeServiceImpl implements StorageTypeService {
     }
 
     @Override
+    public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, String terraformPlan) {
+        String planKey = String.format(GCP_STATE_LOCATION, organizationId, workspaceId, jobId, stepId);
+
+        BlobId blobId = BlobId.of(bucketName, planKey);
+        Blob blob = storage.get(blobId);
+
+        if (blob != null) {
+            log.info("State does exists...");
+            try {
+                WritableByteChannel channel = blob.writer();
+                channel.write(ByteBuffer.wrap(terraformPlan.getBytes(Charset.defaultCharset())));
+                channel.close();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        } else {
+            log.info("Creating new state...");
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+            storage.create(blobInfo, terraformPlan.getBytes(Charset.defaultCharset()));
+        }
+        return String.format("https://storage.cloud.google.com/%s/%s", bucketName, planKey);
+    }
+
+    @Override
     public String saveContext(int jobId, String jobContext) {
         String blobKey = String.format(CONTEXT_JSON, jobId);
         log.info("context file: {}", blobKey);

@@ -104,6 +104,22 @@ public class LocalStorageTypeServiceImpl implements StorageTypeService {
     }
 
     @Override
+    public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, String terraformPlan) {
+        try {
+            String planFile = String.format(STATE_DIRECTORY, organizationId, workspaceId, jobId, stepId);
+            log.info("planFile: {}", planFile);
+            File plan = new File(FileUtils.getUserDirectoryPath().concat(FilenameUtils.separatorsToSystem(planFile)));
+            FileUtils.forceMkdir(plan.getParentFile());
+            FileUtils.writeStringToFile(plan, terraformPlan, Charset.defaultCharset().toString());
+
+            return planFile;
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
     public String saveContext(int jobId, String jobContext) {
         try {
             String contextFilename = String.format(CONTEXT_DIRECTORY, jobId);
