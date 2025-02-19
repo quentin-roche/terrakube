@@ -167,7 +167,7 @@ public class ApiTerraformStateImpl implements TerraformState {
         RunData runData = new RunData();
         runData.setData(runResource);
         CreateStateVersionRelationships stateRelationships = new CreateStateVersionRelationships();
-        stateRelationships.setRun(new RunData());
+        stateRelationships.setRun(runData);
 
         CreateStateVersion createStateVersion = new CreateStateVersion();
         createStateVersion.setType("state-versions");
