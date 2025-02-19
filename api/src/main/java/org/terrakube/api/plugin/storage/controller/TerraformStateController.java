@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.terrakube.api.plugin.security.state.StateService;
 import org.terrakube.api.plugin.state.model.state.PlanStatePath;
+import org.terrakube.api.plugin.state.model.state.PlanStatePathData;
 import org.terrakube.api.plugin.storage.StorageTypeService;
 import org.terrakube.api.repository.ArchiveRepository;
 import org.terrakube.api.repository.HistoryRepository;
@@ -63,7 +64,7 @@ public class TerraformStateController {
     }
 
     @PutMapping(value = "/organization/{organizationId}/workspace/{workspaceId}/jobId/{jobId}/step/{stepId}/terraform.tfstate", produces = "application/vnd.api+json")
-    public ResponseEntity<PlanStatePath> uploadTerraformPlanBinary(HttpServletRequest httpServletRequest,
+    public ResponseEntity<PlanStatePathData> uploadTerraformPlanBinary(HttpServletRequest httpServletRequest,
             @PathVariable("organizationId") String organizationId, @PathVariable("workspaceId") String workspaceId,
             @PathVariable("jobId") String jobId, @PathVariable("stepId") String stepId) throws IOException {
         log.info("uploadTerraformPlanBinary for: {}", workspaceId);
@@ -72,7 +73,9 @@ public class TerraformStateController {
 
         PlanStatePath planStatePath = new PlanStatePath();
         planStatePath.setPath(path);
-        return new ResponseEntity<>(planStatePath, HttpStatus.CREATED);
+        PlanStatePathData planStatePathData = new PlanStatePathData();
+        planStatePathData.setData(planStatePath);
+        return new ResponseEntity<>(planStatePathData, HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/organization/{organizationId}/workspace/{workspaceId}/state/{stateFilename}.json", produces = MediaType.APPLICATION_JSON_VALUE)
