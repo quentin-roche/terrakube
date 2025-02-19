@@ -52,37 +52,41 @@ public class ApiTerraformStateImpl implements TerraformState {
 
     @Override
     public String getBackendStateFile(String organizationId, String workspaceId, File workingDirectory, String terraformVersion) {
-        try {
-            log.info("Downloading state file");
-            String backendStatePath =
-                    FilenameUtils.separatorsToSystem(
-                            String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
-                                    .toArray(String[]::new)));
+        log.info("Downloading state file");
+        String backendStatePath =
+                FilenameUtils.separatorsToSystem(
+                        String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
+                                .toArray(String[]::new)));
 
-            byte[] res = terrakubeClient.getCurrentState(organizationId, workspaceId);
+        byte[] res = terrakubeClient.getCurrentState(organizationId, workspaceId);
 
-            if (res.length == 0) {
-                log.warn("No state file found. This is probably the first run.");
-            } else {
+        if (res.length == 0) {
+            log.warn("No state file found. This is probably the first run.");
+        } else {
+
+            try {
                 Files.write(Paths.get(backendStatePath), res, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-            TextStringBuilder localBackendHcl = new TextStringBuilder();
-            localBackendHcl.appendln("terraform {");
-            localBackendHcl.appendln("  backend \"local\" {");
-            localBackendHcl.appendln("    path                  = \"" + backendStatePath + "\"");
-            localBackendHcl.appendln("  }");
-            localBackendHcl.appendln("}");
-
-            File localBackendFile = new File(backendStatePath);
-
-            log.info("Creating Local Backend File: {}", localBackendFile.getAbsolutePath());
-            FileUtils.writeStringToFile(localBackendFile, localBackendHcl.toString(), Charset.defaultCharset());
-            return BACKEND_FILE_NAME;
-        } catch (IOException e) {
-            log.error("Failed to download state file from terrakube API: {}", e.getMessage());
-            return null;
         }
+
+        TextStringBuilder localBackendHcl = new TextStringBuilder();
+        localBackendHcl.appendln("terraform {");
+        localBackendHcl.appendln("  backend \"local\" {");
+        localBackendHcl.appendln("    path                  = \"" + backendStatePath + "\"");
+        localBackendHcl.appendln("  }");
+        localBackendHcl.appendln("}");
+
+        File localBackendFile = new File(backendStatePath);
+
+        log.info("Creating Local Backend File: {}", localBackendFile.getAbsolutePath());
+        try {
+            FileUtils.writeStringToFile(localBackendFile, localBackendHcl.toString(), Charset.defaultCharset());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return BACKEND_FILE_NAME;
     }
 
     @Override
