@@ -601,7 +601,7 @@ public class RemoteTfeService {
 
         // create dummy job
         Job job;
-        if (stateData.getData().getRelationships() == null) {
+        if (stateData.getData().getRelationships() != null) {
             job = jobRepository.getReferenceById(
                 Integer.valueOf(stateData.getData().getRelationships().getRun().getData().getId())
             );
