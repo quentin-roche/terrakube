@@ -68,8 +68,7 @@ public class TerraformStateController {
             @PathVariable("organizationId") String organizationId, @PathVariable("workspaceId") String workspaceId,
             @PathVariable("jobId") String jobId, @PathVariable("stepId") String stepId) throws IOException {
         log.info("uploadTerraformPlanBinary for: {}", workspaceId);
-        String terraformPlan = IOUtils.toString(httpServletRequest.getInputStream(), StandardCharsets.UTF_8);
-        String path = storageTypeService.uploadTerraformPlan(organizationId, workspaceId, jobId, stepId, terraformPlan);
+        String path = storageTypeService.uploadTerraformPlan(organizationId, workspaceId, jobId, stepId, httpServletRequest.getInputStream().readAllBytes());
 
         PlanStatePath planStatePath = new PlanStatePath();
         planStatePath.setPath(path);

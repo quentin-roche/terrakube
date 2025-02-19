@@ -166,7 +166,7 @@ public class GcpStorageTypeServiceImpl implements StorageTypeService {
     }
 
     @Override
-    public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, String terraformPlan) {
+    public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, byte[] terraformPlan) {
         String planKey = String.format(GCP_STATE_LOCATION, organizationId, workspaceId, jobId, stepId);
 
         BlobId blobId = BlobId.of(bucketName, planKey);
@@ -176,7 +176,7 @@ public class GcpStorageTypeServiceImpl implements StorageTypeService {
             log.info("State does exists...");
             try {
                 WritableByteChannel channel = blob.writer();
-                channel.write(ByteBuffer.wrap(terraformPlan.getBytes(Charset.defaultCharset())));
+                channel.write(ByteBuffer.wrap(terraformPlan));
                 channel.close();
             } catch (IOException e) {
                 log.error(e.getMessage());

@@ -70,6 +70,16 @@ public class AwsStorageTypeServiceImpl implements StorageTypeService {
         log.info("Upload Object {} completed", blobKey);
     }
 
+    private void uploadBytesToBucket(String bucketName, String blobKey, byte[] data){
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(blobKey)
+                .build();
+
+        s3client.putObject(putObjectRequest, RequestBody.fromBytes(data));
+        log.info("Upload Object {} completed", blobKey);
+    }
+
     @Override
     public byte[] getStepOutput(String organizationId, String jobId, String stepId) {
         return downloadObjectFromBucket(bucketName, String.format(BUCKET_LOCATION_OUTPUT, organizationId, jobId, stepId));
@@ -117,9 +127,9 @@ public class AwsStorageTypeServiceImpl implements StorageTypeService {
     }
 
     @Override
-    public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, String terraformPlan) {
+    public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, byte[] terraformPlan) {
         String blobKey = String.format("tfstate/%s/%s/%s/%s/terraformLibrary.tfPlan", organizationId, workspaceId, jobId, stepId);
-        uploadStringToBucket(bucketName, blobKey, terraformPlan);
+        uploadBytesToBucket(bucketName, blobKey, terraformPlan);
 
         GetUrlRequest getUrlRequest = GetUrlRequest.builder()
                 .bucket(bucketName)
