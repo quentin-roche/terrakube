@@ -184,7 +184,7 @@ public class GcpStorageTypeServiceImpl implements StorageTypeService {
         } else {
             log.info("Creating new state...");
             BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-            storage.create(blobInfo, terraformPlan.getBytes(Charset.defaultCharset()));
+            storage.create(blobInfo, terraformPlan);
         }
         return String.format("https://storage.cloud.google.com/%s/%s", bucketName, planKey);
     }
