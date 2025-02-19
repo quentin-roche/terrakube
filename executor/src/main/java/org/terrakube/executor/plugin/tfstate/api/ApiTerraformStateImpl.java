@@ -22,6 +22,7 @@ import org.terrakube.executor.service.mode.TerraformJob;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.Base64;
@@ -122,8 +123,12 @@ public class ApiTerraformStateImpl implements TerraformState {
 
         String localPlanPath = workingDirectory.getAbsolutePath() + "/" + TERRAFORM_PLAN_FILE;
         try {
+            String stateUrl = terrakubeClient.getJobById(organizationId, jobId).getData().getAttributes().getTerraformPlan();
+            log.info("stateUrl: {}", stateUrl);
+            String fullPath = new URL(stateUrl).getPath();
+            log.info("fullPath: {}", fullPath);
 
-            byte[] res = terrakubeClient.getPlanState(organizationId, workspaceId, jobId, stepId);
+            byte[] res = terrakubeClient.getPlanState(fullPath);
 
             if (res.length == 0) {
                 log.info("No plan file found");
