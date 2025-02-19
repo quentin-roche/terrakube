@@ -74,10 +74,7 @@ public class ApiTerraformStateImpl implements TerraformState {
             localBackendHcl.appendln("  }");
             localBackendHcl.appendln("}");
 
-            File localBackendFile = new File(
-                    FilenameUtils.separatorsToSystem(
-                            String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), BACKEND_FILE_NAME)
-                                    .toArray(String[]::new))));
+            File localBackendFile = new File(backendStatePath);
 
             log.info("Creating Local Backend File: {}", localBackendFile.getAbsolutePath());
             FileUtils.writeStringToFile(localBackendFile, localBackendHcl.toString(), Charset.defaultCharset());
@@ -101,7 +98,10 @@ public class ApiTerraformStateImpl implements TerraformState {
                 byte[] planBytes = Files.readAllBytes(localPlanFile.toPath());
                 log.info(String.format("bytes: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", planBytes[0], planBytes[1], planBytes[2], planBytes[3], planBytes[4], planBytes[5], planBytes[6], planBytes[7]));
 
-                return terrakubeClient.uploadPlanState(planBytes, organizationId, workspaceId, jobId, stepId).getData().getPath();
+                terrakubeClient.uploadPlanState(planBytes, organizationId, workspaceId, jobId, stepId);
+
+                return String.format("%s/tfstate/v1/organization/%s/workspace/%s/jobId/%s/step/%s/terraform.tfstate",
+                        apiUrl, organizationId, workspaceId, jobId, stepId);
             } catch (Exception e) {
                 log.error("Failed to upload plan file to terrakube API: {}", e.getMessage());
                 return null;

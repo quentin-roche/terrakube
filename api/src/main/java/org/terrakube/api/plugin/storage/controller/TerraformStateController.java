@@ -64,17 +64,13 @@ public class TerraformStateController {
     }
 
     @PutMapping(value = "/organization/{organizationId}/workspace/{workspaceId}/jobId/{jobId}/step/{stepId}/terraform.tfstate", produces = "application/vnd.api+json")
-    public ResponseEntity<PlanStatePathData> uploadTerraformPlanBinary(HttpServletRequest httpServletRequest,
+    public ResponseEntity<String> uploadTerraformPlanBinary(HttpServletRequest httpServletRequest,
             @PathVariable("organizationId") String organizationId, @PathVariable("workspaceId") String workspaceId,
             @PathVariable("jobId") String jobId, @PathVariable("stepId") String stepId) throws IOException {
         log.info("uploadTerraformPlanBinary for: {}", workspaceId);
         String path = storageTypeService.uploadTerraformPlan(organizationId, workspaceId, jobId, stepId, httpServletRequest.getInputStream().readAllBytes());
 
-        PlanStatePath planStatePath = new PlanStatePath();
-        planStatePath.setPath(path);
-        PlanStatePathData planStatePathData = new PlanStatePathData();
-        planStatePathData.setData(planStatePath);
-        return new ResponseEntity<>(planStatePathData, HttpStatus.CREATED);
+        return ResponseEntity.status(201).body("");
     }
 
     @GetMapping(value = "/organization/{organizationId}/workspace/{workspaceId}/state/{stateFilename}.json", produces = MediaType.APPLICATION_JSON_VALUE)
