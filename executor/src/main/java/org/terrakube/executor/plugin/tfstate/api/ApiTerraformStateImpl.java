@@ -23,10 +23,7 @@ import org.terrakube.executor.service.mode.TerraformJob;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.Base64;
 import java.util.stream.Stream;
 
@@ -60,12 +57,12 @@ public class ApiTerraformStateImpl implements TerraformState {
                             String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
                                     .toArray(String[]::new)));
 
-            feign.Response.Body res = terrakubeClient.getCurrentState(organizationId, workspaceId).body();
+            byte[] res = terrakubeClient.getCurrentState(organizationId, workspaceId);
 
-            if (res == null) {
+            if (res.length == 0) {
                 log.warn("No state file found. This is probably the first run.");
             } else {
-                Files.copy(res.asInputStream(), Paths.get(backendStatePath), StandardCopyOption.REPLACE_EXISTING);
+                Files.write(Paths.get(backendStatePath), res, StandardOpenOption.TRUNCATE_EXISTING);
             }
 
             TextStringBuilder localBackendHcl = new TextStringBuilder();
@@ -121,13 +118,13 @@ public class ApiTerraformStateImpl implements TerraformState {
         String localPlanPath = workingDirectory.getAbsolutePath() + "/" + TERRAFORM_PLAN_FILE;
         try {
 
-            feign.Response.Body res = terrakubeClient.getPlanState(organizationId, workspaceId, jobId, stepId).body();
+            byte[] res = terrakubeClient.getPlanState(organizationId, workspaceId, jobId, stepId);
 
-            if (res == null) {
+            if (res.length == 0) {
                 log.info("No plan file found");
                 return false;
             }
-            Files.copy(res.asInputStream(), Paths.get(localPlanPath), StandardCopyOption.REPLACE_EXISTING);
+            Files.write(Paths.get(localPlanPath), res, StandardOpenOption.TRUNCATE_EXISTING);
             return true;
         } catch (Exception e) {
             log.error("Failed to download state file from terrakube API: {}", e.getMessage());
