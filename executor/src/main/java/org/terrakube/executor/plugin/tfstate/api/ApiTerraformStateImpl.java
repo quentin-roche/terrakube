@@ -53,10 +53,11 @@ public class ApiTerraformStateImpl implements TerraformState {
     @Override
     public String getBackendStateFile(String organizationId, String workspaceId, File workingDirectory, String terraformVersion) {
         log.info("Downloading state file");
-        String backendStatePath =
-                FilenameUtils.separatorsToSystem(
-                        String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
-                                .toArray(String[]::new)));
+
+        File stateFile = new File(
+            FilenameUtils.separatorsToSystem(
+                String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
+                .toArray(String[]::new))));
 
         byte[] res = terrakubeClient.getCurrentState(organizationId, workspaceId);
 
@@ -65,7 +66,7 @@ public class ApiTerraformStateImpl implements TerraformState {
         } else {
 
             try {
-                FileUtils.writeByteArrayToFile(new File(backendStatePath), res);
+                FileUtils.writeByteArrayToFile(stateFile, res);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -74,11 +75,15 @@ public class ApiTerraformStateImpl implements TerraformState {
         TextStringBuilder localBackendHcl = new TextStringBuilder();
         localBackendHcl.appendln("terraform {");
         localBackendHcl.appendln("  backend \"local\" {");
-        localBackendHcl.appendln("    path                  = \"" + backendStatePath + "\"");
+        localBackendHcl.appendln("    path                  = \"" + stateFile.getAbsolutePath() + "\"");
         localBackendHcl.appendln("  }");
         localBackendHcl.appendln("}");
 
-        File localBackendFile = new File(backendStatePath);
+
+        File localBackendFile = new File(
+                FilenameUtils.separatorsToSystem(
+                        String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), BACKEND_FILE_NAME)
+                                .toArray(String[]::new))));
 
         log.info("Creating Local Backend File: {}", localBackendFile.getAbsolutePath());
         try {
