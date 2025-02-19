@@ -52,12 +52,16 @@ public class ApiTerraformStateImpl implements TerraformState {
 
     @Override
     public String getBackendStateFile(String organizationId, String workspaceId, File workingDirectory, String terraformVersion) {
-        log.info("Downloading state file");
 
         File stateFile = new File(
-            FilenameUtils.separatorsToSystem(
-                String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
-                .toArray(String[]::new))));
+                FilenameUtils.separatorsToSystem(
+                        String.join(File.separator, Stream.of(workingDirectory.getAbsolutePath(), STATE_FILE_NAME)
+                                .toArray(String[]::new))));
+        if (stateFile.exists()) {
+            log.info("State file already exists");
+            return BACKEND_FILE_NAME;
+        }
+        log.info("Downloading state file");
 
         byte[] res = terrakubeClient.getCurrentState(organizationId, workspaceId);
 
