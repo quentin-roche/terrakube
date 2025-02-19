@@ -102,8 +102,7 @@ public class ApiTerraformStateImpl implements TerraformState {
                 byte[] planBytes = Files.readAllBytes(localPlanFile.toPath());
                 log.info(String.format("bytes: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", planBytes[0], planBytes[1], planBytes[2], planBytes[3], planBytes[4], planBytes[5], planBytes[6], planBytes[7]));
 
-                feign.Request.Body planBody = feign.Request.Body.create(planBytes);
-                return terrakubeClient.uploadPlanState(planBody, organizationId, workspaceId, jobId, stepId).getData().getPath();
+                return terrakubeClient.uploadPlanState(planBytes, organizationId, workspaceId, jobId, stepId).getData().getPath();
             } catch (Exception e) {
                 log.error("Failed to upload plan file to terrakube API: {}", e.getMessage());
                 return null;
