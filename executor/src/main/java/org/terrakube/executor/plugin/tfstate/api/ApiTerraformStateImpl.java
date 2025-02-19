@@ -22,6 +22,7 @@ import org.terrakube.executor.service.mode.TerraformJob;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -115,31 +116,36 @@ public class ApiTerraformStateImpl implements TerraformState {
     @Override
     public boolean downloadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId,
                                          File workingDirectory) {
-        log.info("Downloading plan file from terrakube API");
-        log.info("Working directory: {}", workingDirectory.getAbsolutePath());
-        log.info("Workspace Id: {}", workspaceId);
-        log.info("Job Id: {}", jobId);
-        log.info("Step Id: {}", stepId);
+    log.info("Downloading plan file from terrakube API");
+    log.info("Working directory: {}", workingDirectory.getAbsolutePath());
+    log.info("Workspace Id: {}", workspaceId);
+    log.info("Job Id: {}", jobId);
+    log.info("Step Id: {}", stepId);
 
-        String localPlanPath = workingDirectory.getAbsolutePath() + "/" + TERRAFORM_PLAN_FILE;
+    String localPlanPath = workingDirectory.getAbsolutePath() + "/" + TERRAFORM_PLAN_FILE;
+        String stateUrl = terrakubeClient.getJobById(organizationId, jobId).getData().getAttributes().getTerraformPlan();
+        log.info("stateUrl: {}", stateUrl);
+        String fullPath = null;
         try {
-            String stateUrl = terrakubeClient.getJobById(organizationId, jobId).getData().getAttributes().getTerraformPlan();
-            log.info("stateUrl: {}", stateUrl);
-            String fullPath = new URL(stateUrl).getPath();
-            log.info("fullPath: {}", fullPath);
+            fullPath = new URL(stateUrl).getPath();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("fullPath: {}", fullPath);
 
-            byte[] res = terrakubeClient.getPlanState(fullPath);
+        byte[] res = terrakubeClient.getPlanState(fullPath);
 
-            if (res.length == 0) {
-                log.info("No plan file found");
-                return false;
-            }
-            Files.write(Paths.get(localPlanPath), res, StandardOpenOption.TRUNCATE_EXISTING);
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to download state file from terrakube API: {}", e.getMessage());
+        if (res.length == 0) {
+            log.info("No plan file found");
             return false;
         }
+        try {
+            Files.write(Paths.get(localPlanPath), res, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return true;
+
     }
 
     @Override
