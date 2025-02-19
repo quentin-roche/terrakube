@@ -65,7 +65,7 @@ public class ApiTerraformStateImpl implements TerraformState {
         } else {
 
             try {
-                Files.write(Paths.get(backendStatePath), res, StandardOpenOption.TRUNCATE_EXISTING);
+                FileUtils.writeByteArrayToFile(new File(backendStatePath), res);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -144,7 +144,7 @@ public class ApiTerraformStateImpl implements TerraformState {
             return false;
         }
         try {
-            Files.write(Paths.get(localPlanPath), res, StandardOpenOption.TRUNCATE_EXISTING);
+            FileUtils.writeByteArrayToFile(new File(localPlanPath), res);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
