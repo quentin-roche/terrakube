@@ -614,15 +614,15 @@ public class RemoteTfeService {
             job.setPlanChanges(true);
             job.setRefreshOnly(false);
             job = jobRepository.save(job);
-        }
 
-        // dummy step
-        Step step = new Step();
-        step.setJob(job);
-        step.setName("Dummy State Uploaded");
-        step.setStatus(JobStatus.completed);
-        step.setStepNumber(100);
-        stepRepository.save(step);
+            // dummy step
+            Step step = new Step();
+            step.setJob(job);
+            step.setName("Dummy State Uploaded");
+            step.setStatus(JobStatus.completed);
+            step.setStepNumber(100);
+            stepRepository.save(step);
+        }
 
         // create dummy history
         History history = new History();
