@@ -115,6 +115,11 @@ public class ApiTerraformStateImpl implements TerraformState {
     public boolean downloadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId,
                                          File workingDirectory) {
         log.info("Downloading plan file from terrakube API");
+        log.info("Working directory: {}", workingDirectory.getAbsolutePath());
+        log.info("Workspace Id: {}", workspaceId);
+        log.info("Job Id: {}", jobId);
+        log.info("Step Id: {}", stepId);
+
         String localPlanPath = workingDirectory.getAbsolutePath() + "/" + TERRAFORM_PLAN_FILE;
         try {
 
