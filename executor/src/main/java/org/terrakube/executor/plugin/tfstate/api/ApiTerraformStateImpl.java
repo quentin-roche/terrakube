@@ -84,7 +84,7 @@ public class ApiTerraformStateImpl implements TerraformState {
             FileUtils.writeStringToFile(localBackendFile, localBackendHcl.toString(), Charset.defaultCharset());
             return BACKEND_FILE_NAME;
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error("Failed to download state file from terrakube API: {}", e.getMessage());
             return null;
         }
     }
@@ -103,7 +103,7 @@ public class ApiTerraformStateImpl implements TerraformState {
 
                 return terrakubeClient.uploadPlanState(planBytes, organizationId, workspaceId, jobId, stepId).getData().getPath();
             } catch (Exception e) {
-                log.error("Failed to upload plan file to terrakube API");
+                log.error("Failed to upload plan file to terrakube API: {}", e.getMessage());
                 return null;
             }
 
@@ -129,7 +129,7 @@ public class ApiTerraformStateImpl implements TerraformState {
             Files.copy(res.asInputStream(), Paths.get(localPlanPath), StandardCopyOption.REPLACE_EXISTING);
             return true;
         } catch (Exception e) {
-            log.error("Failed to download state file from terrakube API");
+            log.error("Failed to download state file from terrakube API: {}", e.getMessage());
             return false;
         }
     }
