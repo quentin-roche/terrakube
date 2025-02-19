@@ -129,6 +129,8 @@ public class AwsStorageTypeServiceImpl implements StorageTypeService {
     @Override
     public String uploadTerraformPlan(String organizationId, String workspaceId, String jobId, String stepId, byte[] terraformPlan) {
         String blobKey = String.format("tfstate/%s/%s/%s/%s/terraformLibrary.tfPlan", organizationId, workspaceId, jobId, stepId);
+
+        log.info(String.format("bytes: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", terraformPlan[0], terraformPlan[1], terraformPlan[2], terraformPlan[3], terraformPlan[4], terraformPlan[5], terraformPlan[6], terraformPlan[7]));
         uploadBytesToBucket(bucketName, blobKey, terraformPlan);
 
         GetUrlRequest getUrlRequest = GetUrlRequest.builder()
