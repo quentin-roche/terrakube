@@ -5,5 +5,6 @@ public enum TerraformOutputType {
     AwsTerraformOutputImpl,
 
     GcpTerraformOutputImpl,
+    ApiTerraformOutputImpl,
     LocalTerraformOutputImpl
 }
